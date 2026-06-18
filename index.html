@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendamento — Salão de Beleza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple-50: #EEEDFE;
+    --purple-200: #AFA9EC;
+    --purple-400: #7F77DD;
+    --purple-600: #534AB7;
+    --purple-800: #3C3489;
+    --teal-50: #E1F5EE;
+    --teal-400: #1D9E75;
+    --teal-600: #0F6E56;
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-hint: #A0A0A0;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
+
+  header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+  .logo-circle { width: 40px; height: 40px; background: var(--purple-50); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--purple-600); font-size: 20px; }
+  .salon-name { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+  .salon-tagline { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+  .progress-wrap { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 24px; }
+  .progress-steps { display: flex; max-width: 480px; margin: 0 auto; }
+  .progress-step { flex: 1; display: flex; align-items: center; flex-direction: column; padding: 14px 0 12px; font-size: 11px; color: var(--text-hint); font-weight: 500; position: relative; gap: 6px; }
+  .progress-step .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .progress-step.active .dot { background: var(--purple-400); border-color: var(--purple-400); color: #fff; }
+  .progress-step.done .dot { background: var(--teal-400); border-color: var(--teal-400); color: #fff; font-size: 13px; }
+  .progress-step.active { color: var(--purple-600); }
+  .progress-step.done { color: var(--teal-600); }
+  .progress-step::after { content: ''; position: absolute; top: 24px; left: 60%; right: -40%; height: 1px; background: var(--border); }
+  .progress-step:last-child::after { display: none; }
+
+  main { flex: 1; padding: 28px 16px 48px; max-width: 512px; margin: 0 auto; width: 100%; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+  .section { margin-bottom: 28px; }
+
+  .services { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .svc-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px 14px 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+  .svc-card:hover { border-color: var(--border-strong); }
+  .svc-card.selected { border: 1.5px solid var(--purple-400); background: var(--purple-50); }
+  .svc-icon { font-size: 22px; color: var(--text-hint); margin-bottom: 8px; }
+  .svc-card.selected .svc-icon { color: var(--purple-600); }
+  .svc-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .svc-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+  .svc-card.selected .svc-name { color: var(--purple-800); }
+  .svc-card.selected .svc-meta { color: var(--purple-600); }
+
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-title { font-size: 15px; font-weight: 500; }
+  .cal-nav { width: 32px; height: 32px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 16px; transition: background 0.1s; }
+  .cal-nav:hover { background: var(--bg); border-color: var(--border-strong); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-name { text-align: center; font-size: 11px; font-weight: 600; color: var(--text-hint); padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; transition: background 0.1s; }
+  .cal-day:hover:not(.empty):not(.past) { background: var(--purple-50); color: var(--purple-800); }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past { color: var(--text-hint); cursor: default; opacity: 0.45; }
+  .cal-day.today { font-weight: 600; color: var(--purple-600); }
+  .cal-day.selected { background: var(--purple-400); color: #fff; font-weight: 500; }
+  .cal-day.selected:hover { background: var(--purple-600); }
+
+  .times { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .time-btn { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 4px; font-size: 13px; font-family: 'Inter', sans-serif; text-align: center; cursor: pointer; color: var(--text-primary); transition: border-color 0.12s, background 0.12s; }
+  .time-btn:hover:not(.taken) { border-color: var(--border-strong); background: var(--purple-50); color: var(--purple-800); }
+  .time-btn.selected { border: 1.5px solid var(--purple-400); background: var(--purple-50); color: var(--purple-800); font-weight: 500; }
+  .time-btn.taken { background: var(--bg); color: var(--text-hint); opacity: 0.5; cursor: not-allowed; text-decoration: line-through; }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+  .field input { width: 100%; padding: 11px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .field input:focus { border-color: var(--purple-400); box-shadow: 0 0 0 3px var(--purple-50); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .summary-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-top: 6px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; font-size: 14px; border-bottom: 0.5px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .summary-row span:first-child { color: var(--text-secondary); }
+  .summary-row span:last-child { font-weight: 500; }
+  .summary-row.total span { font-size: 15px; font-weight: 600; color: var(--purple-800); }
+
+  .cta-btn { width: 100%; padding: 14px; background: var(--purple-400); color: #fff; border: none; border-radius: var(--radius-md); font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s, transform 0.1s; }
+  .cta-btn:hover:not(:disabled) { background: var(--purple-600); }
+  .cta-btn:active:not(:disabled) { transform: scale(0.99); }
+  .cta-btn:disabled { background: var(--border); color: var(--text-hint); cursor: not-allowed; }
+
+  .hidden { display: none !important; }
+
+  .loading-times { text-align: center; padding: 20px; font-size: 13px; color: var(--text-secondary); }
+
+  .success-wrap { text-align: center; padding: 3rem 1rem; }
+  .success-icon-wrap { width: 72px; height: 72px; background: var(--teal-50); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 36px; color: var(--teal-400); }
+  .success-wrap h2 { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+  .success-wrap p { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 340px; margin: 0 auto; }
+  .success-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px; text-align: left; margin: 24px auto 0; max-width: 340px; }
+  .new-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 11px 24px; border: 0.5px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: 'Inter', sans-serif; cursor: pointer; color: var(--text-primary); background: var(--surface); transition: background 0.1s; }
+  .new-btn:hover { background: var(--purple-50); border-color: var(--purple-200); color: var(--purple-800); }
+
+  footer { text-align: center; padding: 18px; font-size: 12px; color: var(--text-hint); border-top: 0.5px solid var(--border); background: var(--surface); }
+
+  @media (max-width: 400px) {
+    .services { grid-template-columns: 1fr; }
+    .times { grid-template-columns: repeat(3, 1fr); }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-circle"><i class="ti ti-scissors"></i></div>
+  <div>
+    <div class="salon-name">Salão de Beleza</div>
+    <div class="salon-tagline">Design de Sobrancelha &amp; Beleza</div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="progress-step active" id="ps1"><div class="dot" id="pd1">1</div><span>Serviço</span></div>
+    <div class="progress-step" id="ps2"><div class="dot" id="pd2">2</div><span>Data</span></div>
+    <div class="progress-step" id="ps3"><div class="dot" id="pd3">3</div><span>Horário</span></div>
+    <div class="progress-step" id="ps4"><div class="dot" id="pd4">4</div><span>Dados</span></div>
+  </div>
+</div>
+
+<main>
+  <div id="form-view">
+
+    <div class="section">
+      <p class="section-title">Escolha o serviço</p>
+      <div class="services" id="services">
+        <div class="svc-card" data-svc="Corte de Cabelo" data-price="R$ 60" data-dur="45 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-scissors"></i></div>
+          <div class="svc-name">Corte de cabelo</div>
+          <div class="svc-meta">R$ 60 · 45 min</div>
+        </div>
+        <div class="svc-card" data-svc="Design de Sobrancelha" data-price="R$ 40" data-dur="30 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-eye"></i></div>
+          <div class="svc-name">Design de sobrancelha</div>
+          <div class="svc-meta">R$ 40 · 30 min</div>
+        </div>
+        <div class="svc-card" data-svc="Coloração" data-price="R$ 120" data-dur="90 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-palette"></i></div>
+          <div class="svc-name">Coloração</div>
+          <div class="svc-meta">R$ 120 · 90 min</div>
+        </div>
+        <div class="svc-card" data-svc="Hidratação" data-price="R$ 80" data-dur="60 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-droplet"></i></div>
+          <div class="svc-name">Hidratação</div>
+          <div class="svc-meta">R$ 80 · 60 min</div>
+        </div>
+        <div class="svc-card" data-svc="Escova" data-price="R$ 70" data-dur="50 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-wind"></i></div>
+          <div class="svc-name">Escova</div>
+          <div class="svc-meta">R$ 70 · 50 min</div>
+        </div>
+        <div class="svc-card" data-svc="Manicure" data-price="R$ 35" data-dur="40 min" onclick="selectSvc(this)">
+          <div class="svc-icon"><i class="ti ti-hand-stop"></i></div>
+          <div class="svc-name">Manicure</div>
+          <div class="svc-meta">R$ 35 · 40 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Escolha a data</p>
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeMonth(-1)" aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button>
+        <span class="cal-title" id="cal-title"></span>
+        <button class="cal-nav" onclick="changeMonth(1)" aria-label="Próximo mês"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="section hidden" id="times-section">
+      <p class="section-title">Escolha o horário</p>
+      <div id="times-container">
+        <div class="loading-times"><i class="ti ti-loader" style="font-size:18px;vertical-align:-3px;margin-right:6px"></i>Verificando horários disponíveis...</div>
+      </div>
+    </div>
+
+    <div class="section hidden" id="client-section">
+      <p class="section-title">Seus dados</p>
+      <div class="row2">
+        <div class="field">
+          <label for="fname">Nome</label>
+          <input type="text" id="fname" placeholder="Seu nome" autocomplete="given-name" oninput="checkReady()">
+        </div>
+        <div class="field">
+          <label for="fphone">WhatsApp</label>
+          <input type="tel" id="fphone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="checkReady()">
+        </div>
+      </div>
+      <div class="field">
+        <label for="fnotes">Observações (opcional)</label>
+        <input type="text" id="fnotes" placeholder="Ex: cabelo longo, alergia a amônia...">
+      </div>
+      <div class="summary-box" id="summary"></div>
+    </div>
+
+    <button class="cta-btn" id="confirm-btn" onclick="doConfirm()" disabled>
+      <i class="ti ti-calendar-check"></i> Confirmar agendamento
+    </button>
+
+  </div>
+
+  <div id="success-view" class="success-wrap hidden">
+    <div class="success-icon-wrap"><i class="ti ti-circle-check"></i></div>
+    <h2>Agendamento confirmado!</h2>
+    <p id="success-msg"></p>
+    <div class="success-card" id="success-card"></div>
+    <button class="new-btn" onclick="reset()">
+      <i class="ti ti-plus"></i> Fazer novo agendamento
+    </button>
+  </div>
+</main>
+
+<footer>&copy; 2025 Salão de Beleza — Desenvolvido com carinho ✨</footer>
+
+<script>
+  // ─────────────────────────────────────────────
+  // CONFIGURAÇÃO — cole aqui a URL do seu Script
+  // ─────────────────────────────────────────────
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzFlt4SazWSgIuY0x3JsfCKO65xQSvl-M9fPtJXEPhvQW92_qJOzqY7ZsI3PA4vBKJD6g/exec';
+
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const ALL_TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+
+  let curMonth = new Date(); curMonth.setDate(1);
+  let selSvc = null, selDate = null, selTime = null;
+  let takenTimes = [];
+
+  function setProgress(step) {
+    [1,2,3,4].forEach(i => {
+      const ps = document.getElementById('ps'+i);
+      const pd = document.getElementById('pd'+i);
+      ps.classList.remove('active','done');
+      if (i < step) { ps.classList.add('done'); pd.innerHTML = '<i class="ti ti-check" style="font-size:12px"></i>'; }
+      else if (i === step) { ps.classList.add('active'); pd.textContent = i; }
+      else { pd.textContent = i; }
+    });
+  }
+
+  function selectSvc(el) {
+    document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selSvc = { name: el.dataset.svc, price: el.dataset.price, dur: el.dataset.dur };
+    setProgress(2);
+    checkReady();
+  }
+
+  function changeMonth(d) { curMonth.setMonth(curMonth.getMonth() + d); renderCal(); }
+
+  function renderCal() {
+    document.getElementById('cal-title').textContent = MONTHS[curMonth.getMonth()] + ' ' + curMonth.getFullYear();
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    DAYS_SHORT.forEach(d => { const el = document.createElement('div'); el.className='cal-day-name'; el.textContent=d; grid.appendChild(el); });
+    const first = new Date(curMonth.getFullYear(), curMonth.getMonth(), 1).getDay();
+    const days = new Date(curMonth.getFullYear(), curMonth.getMonth()+1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (let i = 0; i < first; i++) { const e = document.createElement('div'); e.className='cal-day empty'; grid.appendChild(e); }
+    for (let d = 1; d <= days; d++) {
+      const e = document.createElement('div'); e.className='cal-day'; e.textContent=d;
+      const dd = new Date(curMonth.getFullYear(), curMonth.getMonth(), d);
+      const isPast = dd < today, isSun = dd.getDay()===0, isToday = dd.getTime()===today.getTime();
+      if (isPast || isSun) { e.classList.add('past'); }
+      else {
+        if (isToday) e.classList.add('today');
+        if (selDate && selDate.getTime()===dd.getTime()) e.classList.add('selected');
+        const cap = new Date(dd);
+        e.onclick = () => selectDate(cap, e);
+      }
+      grid.appendChild(e);
+    }
+  }
+
+  function fmtDate(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+  }
+
+  async function selectDate(d, el) {
+    selDate = d; selTime = null;
+    document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('times-section').classList.remove('hidden');
+    document.getElementById('client-section').classList.add('hidden');
+    document.getElementById('confirm-btn').disabled = true;
+    setProgress(3);
+
+    const container = document.getElementById('times-container');
+    container.innerHTML = '<div class="loading-times"><i class="ti ti-loader" style="font-size:18px;vertical-align:-3px;margin-right:6px"></i>Verificando horários disponíveis...</div>';
+
+    try {
+      const res = await fetch(SHEET_URL + '?action=getTaken&date=' + fmtDate(d));
+      const json = await res.json();
+      takenTimes = json.taken || [];
+    } catch(e) {
+      takenTimes = [];
+    }
+
+    renderTimes(container);
+  }
+
+  function renderTimes(container) {
+    const wrap = document.createElement('div');
+    wrap.className = 'times';
+    ALL_TIMES.forEach(t => {
+      const e = document.createElement('button');
+      const isTaken = takenTimes.includes(t);
+      e.className = 'time-btn' + (isTaken ? ' taken' : '');
+      e.textContent = t;
+      if (!isTaken) e.onclick = () => selectTime(t, e);
+      wrap.appendChild(e);
+    });
+    container.innerHTML = '';
+    container.appendChild(wrap);
+  }
+
+  function selectTime(t, el) {
+    selTime = t;
+    document.querySelectorAll('.time-btn').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('client-section').classList.remove('hidden');
+    setProgress(4);
+    updateSummary();
+    checkReady();
+    setTimeout(() => document.getElementById('fname').focus(), 100);
+  }
+
+  function updateSummary() {
+    if (!selSvc || !selDate || !selTime) return;
+    const dStr = selDate.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
+    document.getElementById('summary').innerHTML = `
+      <div class="summary-row"><span>Serviço</span><span>${selSvc.name}</span></div>
+      <div class="summary-row"><span>Duração</span><span>${selSvc.dur}</span></div>
+      <div class="summary-row"><span>Data</span><span>${dStr}</span></div>
+      <div class="summary-row"><span>Horário</span><span>${selTime}</span></div>
+      <div class="summary-row total"><span>Valor</span><span>${selSvc.price}</span></div>`;
+  }
+
+  function checkReady() {
+    const name = document.getElementById('fname').value.trim();
+    document.getElementById('confirm-btn').disabled = !(selSvc && selDate && selTime && name);
+  }
+
+  async function doConfirm() {
+    const name = document.getElementById('fname').value.trim() || 'Cliente';
+    const phone = document.getElementById('fphone').value.trim();
+    const notes = document.getElementById('fnotes').value.trim();
+    const dStr = selDate.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
+
+    const btn = document.getElementById('confirm-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader"></i> Salvando...';
+
+    try {
+      const params = new URLSearchParams({
+        action: 'addBooking',
+        date: fmtDate(selDate),
+        time: selTime,
+        service: selSvc.name,
+        price: selSvc.price,
+        name, phone, notes
+      });
+      await fetch(SHEET_URL + '?' + params.toString());
+    } catch(e) { /* continua mesmo se der erro */ }
+
+    document.getElementById('form-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+    document.getElementById('success-msg').textContent =
+      `${name}, seu agendamento foi marcado com sucesso! Entraremos em contato${phone ? ' pelo ' + phone : ''} para confirmar.`;
+    document.getElementById('success-card').innerHTML = `
+      <div class="summary-row"><span>Serviço</span><span>${selSvc.name}</span></div>
+      <div class="summary-row"><span>Data</span><span>${dStr}</span></div>
+      <div class="summary-row"><span>Horário</span><span>${selTime}</span></div>
+      <div class="summary-row total"><span>Valor</span><span>${selSvc.price}</span></div>
+      ${notes ? '<div class="summary-row"><span>Obs.</span><span>'+notes+'</span></div>' : ''}`;
+    setProgress(5);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const msg = `*Novo agendamento* 💅\n\n*Cliente:* ${name}\n*Telefone:* ${phone || 'não informado'}\n*Serviço:* ${selSvc.name}\n*Data:* ${dStr}\n*Horário:* ${selTime}\n*Valor:* ${selSvc.price}${notes ? '\n*Obs.:* ' + notes : ''}`;
+    const waUrl = 'https://wa.me/5511970128114?text=' + encodeURIComponent(msg);
+    setTimeout(() => window.open(waUrl, '_blank'), 600);
+  }
+
+  function reset() {
+    selSvc = null; selDate = null; selTime = null; takenTimes = [];
+    document.getElementById('success-view').classList.add('hidden');
+    document.getElementById('form-view').classList.remove('hidden');
+    document.getElementById('times-section').classList.add('hidden');
+    document.getElementById('client-section').classList.add('hidden');
+    document.getElementById('fname').value = '';
+    document.getElementById('fphone').value = '';
+    document.getElementById('fnotes').value = '';
+    document.querySelectorAll('.svc-card').forEach(c => c.classList.remove('selected'));
+    curMonth = new Date(); curMonth.setDate(1);
+    setProgress(1);
+    renderCal();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  renderCal();
+  setProgress(1);
+</script>
+</body>
+</html>
