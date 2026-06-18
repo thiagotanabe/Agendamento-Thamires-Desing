@@ -315,7 +315,7 @@
     container.innerHTML = '<div class="loading-times"><i class="ti ti-loader" style="font-size:18px;vertical-align:-3px;margin-right:6px"></i>Verificando horários disponíveis...</div>';
 
     try {
-      const res = await fetch(SHEET_URL + '?action=getTaken&date=' + fmtDate(d));
+      const res = await fetch(SHEET_URL + '?action=getTaken&date=' + fmtDate(d), { redirect: 'follow' });
       const json = await res.json();
       takenTimes = json.taken || [];
     } catch(e) {
@@ -386,7 +386,7 @@
         price: selSvc.price,
         name, phone, notes
       });
-      await fetch(SHEET_URL + '?' + params.toString());
+      await fetch(SHEET_URL + '?' + params.toString(), { redirect: 'follow' });
     } catch(e) { /* continua mesmo se der erro */ }
 
     document.getElementById('form-view').classList.add('hidden');
